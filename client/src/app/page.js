@@ -16,8 +16,8 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen bg-zinc-50 font-sans dark:bg-black">
       <Topbar onMenuClick={toggleMenu} />
-      <main className="flex-grow p-4 mb-48">
-        <div className=" m-12 ">
+      <main className="flex-grow md:p-4 mb-48">
+        <div className=" m-12">
           <HeroSection />
         </div>
       </main>

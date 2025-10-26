@@ -1,7 +1,7 @@
 // src/context/AuthContext.js
 "use client";
 
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 // 1. Creăm Contextul
@@ -9,6 +9,11 @@ import { useRouter } from "next/navigation";
 const AuthContext = createContext(null);
 
 const STORAGE_KEY = "finai:user";
+
+const scheduleMicrotask =
+  typeof queueMicrotask === "function"
+    ? queueMicrotask
+    : (callback) => Promise.resolve().then(callback);
 
 const readStoredUser = () => {
   if (typeof window === "undefined") {
@@ -33,8 +38,25 @@ const readStoredUser = () => {
 // Aceasta este componenta care VA ȚINE "rucsacul" și îl va oferi copiilor săi.
 // Ea va gestiona toată logica.
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(readStoredUser); // Încercăm să restaurăm user-ul din localStorage
+  const [user, setUser] = useState(null); // Starea inițială este identică pe server și client
+  const [isReady, setIsReady] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    const storedUser = readStoredUser();
+
+    if (storedUser) {
+      scheduleMicrotask(() => {
+        setUser(storedUser);
+        setIsReady(true);
+      });
+      return;
+    }
+
+    scheduleMicrotask(() => {
+      setIsReady(true);
+    });
+  }, []);
 
   const persistUser = (userData) => {
     setUser(userData);
@@ -92,6 +114,7 @@ export function AuthProvider({ children }) {
   // starea (user) și funcțiile (login, signup, logout)
   const value = {
     user,
+    isReady,
     login,
     signup,
     logout,

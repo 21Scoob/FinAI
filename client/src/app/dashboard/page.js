@@ -8,16 +8,16 @@ import Topbar from "../components/Topbar";
 import Footer from "../components/Footer";
 
 export default function Dashboard() {
-  const { user, logout } = useAuth();
+  const { user, logout, isReady } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (user === null) {
+    if (isReady && user === null) {
       router.push("/login");
     }
-  }, [user, router]);
+  }, [user, isReady, router]);
 
-  if (user === null) {
+  if (!isReady || user === null) {
     return (
       <div className="flex min-h-screen items-center justify-center dark:bg-black text-white">
         Loading...
