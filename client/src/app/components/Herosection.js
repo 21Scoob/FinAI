@@ -5,7 +5,7 @@ import Link from "next/link";
 
 export default function HeroSection() {
   return (
-    <div className="flex flex-col items-center justify-center text-center px-4 py-24 sm:py-2 text-white">
+    <div className="flex flex-col items-center justify-center text-center px-4 md:py-32  text-white">
       {/* Titlul principal (H1) - mare și îngroșat */}
       <h1 className="text-4xl sm:text-6xl font-bold tracking-tight">
         Controlează-ți viitorul financiar cu FinAI
