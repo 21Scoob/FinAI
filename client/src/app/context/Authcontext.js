@@ -93,14 +93,31 @@ export function AuthProvider({ children }) {
 
   // Funcția de Signup (simulată)
   const signup = async (email, password) => {
-    console.log("Încercare signup cu:", email);
+    console.log("Se apelează API-ul de signup pentru:", email);
 
-    // --- SIMULARE BACKEND ---
-    // Aici, în viitor, vei face un fetch() POST către /api/register
-    const fakeUserData = { id: 2, email: email };
-    persistUser(fakeUserData); // 👈 Am salvat noul user în "rucsac" + localStorage
-    router.push("/dashboard"); // Navigăm spre dashboard
-    // --- SFÂRȘIT SIMULARE ---
+    // 1. Apelăm API-ul de backend pe care l-am creat
+    const response = await fetch("/api/auth/signup", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      // 3. Dacă serverul dă o eroare (ex: email-ul există)
+      // Aruncăm o eroare pe care o va prinde 'catch'-ul din Signup.js
+      throw new Error(data.error || "A apărut o eroare la înregistrare");
+    }
+
+    // 4. SUCCES! Serverul a creat contul și ne-a dat datele noului user
+    // Salvăm user-ul în context/localStorage
+    persistUser(data);
+
+    // 5. Navigăm utilizatorul către dashboard
+    router.push("/dashboard");
   };
 
   // Funcția de Logout

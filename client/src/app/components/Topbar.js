@@ -61,7 +61,7 @@ export default function Topbar() {
             </span>
           </button>
           <button
-            className="cursor-pointer text-lg font-semibold sm:text-xl sm:ml-8 mr-10"
+            className="cursor-pointer text-lg font-semibold sm:text-xl sm:ml-8 mr-10 "
             onClick={() => goTo("/")}
           >
             FinAI
@@ -82,19 +82,13 @@ export default function Topbar() {
 
         <div className="flex items-center gap-2">
           <button
-            className="cursor-pointer rounded p-2 
-                       transition-all duration-300 ease-in-out 
-                       hover:bg-gray-800 
-                       hover:shadow-lg hover:shadow-white/10"
+            className="cursor-pointer rounded p-2 transition-all duration-300 ease-in-out hover:shadow-md hover:shadow-white/10"
             onClick={() => goTo("/login")}
           >
             Login
           </button>
           <button
-            className="cursor-pointer rounded p-2 
-                      transition-all duration-300 ease-in-out 
-                       hover:bg-gray-800 
-                       hover:shadow-lg hover:shadow-white/10"
+            className="cursor-pointer rounded p-2 transition-all duration-300 ease-in-out hover:shadow-md hover:shadow-white/10"
             onClick={() => goTo("/signup")}
           >
             Signup
