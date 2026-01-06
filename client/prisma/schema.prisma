@@ -9,23 +9,70 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
 }
 
-enum Role{
+enum Role {
   USER
   ADMIN
 }
 
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
 
 model User {
-  id        Int       @id @default(autoincrement())
-  email     String    @unique
-  password  String
-  role      Role      @default(USER)
-  createdAt DateTime  @default(now())  
+  id          Int           @id @default(autoincrement())
+  email       String        @unique
+  password    String
+  role        Role          @default(USER)
+  createdAt   DateTime      @default(now())
+  
+  transactions Transaction[]
+  budgets      Budget[]
+  investments  Investment[]
+  goals        Goal[]
+}
 
-  // Aici vom adăuga relațiile mai târziu
-  // ex: transactions Transaction[] 
+model Transaction {
+  id          Int             @id @default(autoincrement())
+  amount      Float
+  description String
+  date        DateTime        @default(now())
+  type        TransactionType
+  category    String?
+  userId      Int
+  user        User            @relation(fields: [userId], references: [id])
+}
+
+model Budget {
+  id          Int      @id @default(autoincrement())
+  name        String
+  allocated   Float
+  spent       Float    @default(0)
+  icon        String?
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
+}
+
+model Investment {
+  id          Int      @id @default(autoincrement())
+  name        String
+  type        String   // e.g., "Stock", "Crypto", "Bond"
+  quantity    Float
+  currentPrice Float
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
+}
+
+model Goal {
+  id            Int      @id @default(autoincrement())
+  name          String
+  targetAmount  Float
+  currentAmount Float    @default(0)
+  deadline      DateTime?
+  userId        Int
+  user          User     @relation(fields: [userId], references: [id])
 }

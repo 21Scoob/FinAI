@@ -1,7 +1,7 @@
 // src/app/dashboard/page.js
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useAuth } from "../context/Authcontext";
 import { useRouter } from "next/navigation";
 import Topbar from "../components/Topbar";
@@ -10,6 +10,8 @@ import Footer from "../components/Footer";
 export default function Dashboard() {
   const { user, logout, isReady } = useAuth();
   const router = useRouter();
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (isReady && user === null) {
@@ -17,7 +19,22 @@ export default function Dashboard() {
     }
   }, [user, isReady, router]);
 
-  if (!isReady || user === null) {
+  useEffect(() => {
+    if (user) {
+      fetch("/api/dashboard")
+        .then((res) => res.json())
+        .then((data) => {
+          setData(data);
+          setLoading(false);
+        })
+        .catch((err) => {
+          console.error(err);
+          setLoading(false);
+        });
+    }
+  }, [user]);
+
+  if (!isReady || user === null || loading) {
     return (
       <div className="flex min-h-screen items-center justify-center dark:bg-black text-white">
         Loading...
@@ -32,9 +49,11 @@ export default function Dashboard() {
         {/* Sold curent */}
         <div className="rounded-xl border border-zinc-800 bg-zinc-950/40 p-8 shadow-lg">
           <div className="text-sm uppercase tracking-wide text-zinc-400">
-            USD Dollar
+            Total Balance
           </div>
-          <div className="mt-3 text-4xl font-semibold text-white">23.000</div>
+          <div className="mt-3 text-4xl font-semibold text-white">
+            {data?.balance?.toLocaleString()} RON
+          </div>
           <div className="mt-4 text-sm text-zinc-500">
             Disponibil în contul principal
           </div>
@@ -45,7 +64,7 @@ export default function Dashboard() {
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <h2 className="text-xl font-semibold text-white">Portofoliu</h2>
             <span className="text-sm text-zinc-500">
-              Ultima actualizare: astăzi, 09:45
+              Ultima actualizare: azi
             </span>
           </div>
           <div className="mt-6 grid gap-6 md:grid-cols-2">
@@ -57,9 +76,9 @@ export default function Dashboard() {
                 Evoluția activelor tale în ultimele 30 de zile.
               </p>
               <div className="mt-6 flex items-baseline gap-2 text-3xl font-semibold text-emerald-400">
-                +12.4%
+                +0%
                 <span className="text-sm font-normal text-zinc-500">
-                  vs luna trecută
+                  vs luna trecută (Mock)
                 </span>
               </div>
             </div>
@@ -71,18 +90,21 @@ export default function Dashboard() {
                 Distribuția investițiilor curente pe categorii.
               </p>
               <ul className="mt-6 space-y-3 text-sm text-zinc-300">
-                <li className="flex items-center justify-between">
-                  <span>Acțiuni</span>
-                  <span className="font-medium text-white">55%</span>
-                </li>
-                <li className="flex items-center justify-between">
-                  <span>Obligațiuni</span>
-                  <span className="font-medium text-white">28%</span>
-                </li>
-                <li className="flex items-center justify-between">
-                  <span>Crypto</span>
-                  <span className="font-medium text-white">17%</span>
-                </li>
+                {data?.investments?.length > 0 ? (
+                  data.investments.map((inv) => (
+                    <li
+                      key={inv.id}
+                      className="flex items-center justify-between"
+                    >
+                      <span>{inv.name}</span>
+                      <span className="font-medium text-white">
+                        {inv.quantity} units
+                      </span>
+                    </li>
+                  ))
+                ) : (
+                  <li className="text-zinc-500">Nu ai investiții încă.</li>
+                )}
               </ul>
             </div>
           </div>
@@ -108,18 +130,28 @@ export default function Dashboard() {
                 Rezumat al celor mai recente mișcări din cont.
               </p>
               <ul className="mt-6 space-y-4 text-sm text-zinc-300">
-                <li className="flex items-center justify-between">
-                  <span>Cumpărat TSLA</span>
-                  <span className="text-emerald-400">+3.200 USD</span>
-                </li>
-                <li className="flex items-center justify-between">
-                  <span>Vândut BTC</span>
-                  <span className="text-emerald-400">+1.150 USD</span>
-                </li>
-                <li className="flex items-center justify-between">
-                  <span>Retragere cont curent</span>
-                  <span className="text-red-400">-500 USD</span>
-                </li>
+                {data?.recentTransactions?.length > 0 ? (
+                  data.recentTransactions.map((t) => (
+                    <li
+                      key={t.id}
+                      className="flex items-center justify-between"
+                    >
+                      <span>{t.description}</span>
+                      <span
+                        className={
+                          t.type === "INCOME"
+                            ? "text-emerald-400"
+                            : "text-red-400"
+                        }
+                      >
+                        {t.type === "INCOME" ? "+" : "-"}
+                        {t.amount} RON
+                      </span>
+                    </li>
+                  ))
+                ) : (
+                  <li className="text-zinc-500">Nu ai tranzacții recente.</li>
+                )}
               </ul>
             </div>
             <div className="rounded-xl border border-zinc-800 bg-zinc-950/60 p-6">
@@ -130,33 +162,34 @@ export default function Dashboard() {
                 Urmărește-ți progresul către obiectivele financiare stabilite.
               </p>
               <div className="mt-6 space-y-5">
-                <div>
-                  <div className="flex items-center justify-between text-sm text-zinc-300">
-                    <span>Fonds de urgență</span>
-                    <span className="text-white">70%</span>
-                  </div>
-                  <div className="mt-2 h-2 w-full rounded-full bg-zinc-800">
-                    <div className="h-full w-[70%] rounded-full bg-emerald-500"></div>
-                  </div>
-                </div>
-                <div>
-                  <div className="flex items-center justify-between text-sm text-zinc-300">
-                    <span>Avans apartament</span>
-                    <span className="text-white">45%</span>
-                  </div>
-                  <div className="mt-2 h-2 w-full rounded-full bg-zinc-800">
-                    <div className="h-full w-[45%] rounded-full bg-blue-500"></div>
-                  </div>
-                </div>
-                <div>
-                  <div className="flex items-center justify-between text-sm text-zinc-300">
-                    <span>Portofoliu ETF</span>
-                    <span className="text-white">32%</span>
-                  </div>
-                  <div className="mt-2 h-2 w-full rounded-full bg-zinc-800">
-                    <div className="h-full w-[32%] rounded-full bg-purple-500"></div>
-                  </div>
-                </div>
+                {data?.goals?.length > 0 ? (
+                  data.goals.map((goal) => (
+                    <div key={goal.id}>
+                      <div className="flex items-center justify-between text-sm text-zinc-300">
+                        <span>{goal.name}</span>
+                        <span className="text-white">
+                          {Math.round(
+                            (goal.currentAmount / goal.targetAmount) * 100
+                          )}
+                          %
+                        </span>
+                      </div>
+                      <div className="mt-2 h-2 w-full rounded-full bg-zinc-800">
+                        <div
+                          className="h-full rounded-full bg-emerald-500"
+                          style={{
+                            width: `${Math.min(
+                              (goal.currentAmount / goal.targetAmount) * 100,
+                              100
+                            )}%`,
+                          }}
+                        ></div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-zinc-500">Nu ai setat obiective.</div>
+                )}
               </div>
             </div>
           </div>

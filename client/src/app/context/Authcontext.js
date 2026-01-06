@@ -75,20 +75,27 @@ export function AuthProvider({ children }) {
   // --- Funcțiile pe care le oferim ---
 
   // Funcția de Login (simulată)
+  // Funcția de Login (reală)
   const login = async (email, password) => {
     console.log("Încercare login cu:", email);
 
-    // --- SIMULARE BACKEND ---
-    // Aici, în viitor, vei face un fetch() către API-ul tău
-    if (email === "test@test.com" && password === "123") {
-      const fakeUserData = { id: 1, email: "test@test.com" };
-      persistUser(fakeUserData); // 👈 Am salvat user-ul în "rucsac" + localStorage
-      router.push("/dashboard"); // Navigăm spre dashboard
-    } else {
-      // Aruncăm o eroare pe care o vom prinde în Login.js
-      throw new Error("Email sau parolă incorectă");
+    const response = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "Email sau parolă incorectă");
     }
-    // --- SFÂRȘIT SIMULARE ---
+
+    // Salvăm user-ul în context/localStorage
+    persistUser(data);
+    router.push("/dashboard");
   };
 
   // Funcția de Signup (simulată)

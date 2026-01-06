@@ -3,8 +3,11 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { useAuth } from "../context/Authcontext";
+
 export default function Topbar() {
   const router = useRouter();
+  const { user, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -80,19 +83,36 @@ export default function Topbar() {
           ))}
         </nav>
 
-        <div className="flex items-center gap-2">
-          <button
-            className="cursor-pointer rounded p-2 transition-all duration-300 ease-in-out hover:shadow-md hover:shadow-white/10"
-            onClick={() => goTo("/login")}
-          >
-            Login
-          </button>
-          <button
-            className="cursor-pointer rounded p-2 transition-all duration-300 ease-in-out hover:shadow-md hover:shadow-white/10"
-            onClick={() => goTo("/signup")}
-          >
-            Signup
-          </button>
+        <div className="flex items-center gap-4">
+          {user ? (
+            <>
+              <span className="hidden sm:inline-block text-sm text-zinc-300">
+                Welcome,{" "}
+                <span className="font-semibold text-white">{user.email}</span>
+              </span>
+              <button
+                className="cursor-pointer rounded p-2 text-red-400 hover:text-red-300 transition-all duration-300 ease-in-out hover:shadow-md hover:shadow-white/10"
+                onClick={logout}
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                className="cursor-pointer rounded p-2 transition-all duration-300 ease-in-out hover:shadow-md hover:shadow-white/10"
+                onClick={() => goTo("/login")}
+              >
+                Login
+              </button>
+              <button
+                className="cursor-pointer rounded p-2 transition-all duration-300 ease-in-out hover:shadow-md hover:shadow-white/10"
+                onClick={() => goTo("/signup")}
+              >
+                Signup
+              </button>
+            </>
+          )}
         </div>
       </header>
 
@@ -139,18 +159,37 @@ export default function Topbar() {
             </button>
 
             <div className="mt-6 flex w-full flex-col gap-4 text-lg">
-              <button
-                className="w-full rounded-lg border border-white/20 px-4 py-2 text-left hover:border-white/40"
-                onClick={() => goTo("/login")}
-              >
-                Login
-              </button>
-              <button
-                className="w-full rounded-lg border border-white/20 px-4 py-2 text-left hover:border-white/40"
-                onClick={() => goTo("/signup")}
-              >
-                Signup
-              </button>
+              {user ? (
+                <>
+                  <div className="text-sm text-zinc-400">
+                    Logged in as {user.email}
+                  </div>
+                  <button
+                    className="w-full rounded-lg border border-red-500/30 text-red-400 px-4 py-2 text-left hover:border-red-500/60"
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      logout();
+                    }}
+                  >
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    className="w-full rounded-lg border border-white/20 px-4 py-2 text-left hover:border-white/40"
+                    onClick={() => goTo("/login")}
+                  >
+                    Login
+                  </button>
+                  <button
+                    className="w-full rounded-lg border border-white/20 px-4 py-2 text-left hover:border-white/40"
+                    onClick={() => goTo("/signup")}
+                  >
+                    Signup
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
