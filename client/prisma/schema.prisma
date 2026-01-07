@@ -11,6 +11,7 @@ generator client {
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 enum Role {
@@ -25,15 +26,18 @@ enum TransactionType {
 
 model User {
   id          Int           @id @default(autoincrement())
+  username        String        
   email       String        @unique
   password    String
   role        Role          @default(USER)
   createdAt   DateTime      @default(now())
   
+  
   transactions Transaction[]
   budgets      Budget[]
   investments  Investment[]
   goals        Goal[]
+  cheltuieli   Cheltuieli[]
 }
 
 model Transaction {
@@ -57,6 +61,16 @@ model Budget {
   user        User     @relation(fields: [userId], references: [id])
 }
 
+model Cheltuieli {
+  id          Int      @id @default(autoincrement())
+  name        String
+  allocated   Float
+  spent       Float    @default(0)
+  icon        String?
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
+}
+ 
 model Investment {
   id          Int      @id @default(autoincrement())
   name        String

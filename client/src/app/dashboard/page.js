@@ -43,7 +43,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-zinc-50 dark:bg-black text-white">
+    <div className="flex flex-col min-h-screen bg-zinc-50 dark:bg-black text-white ">
       <Topbar />
       <main className="flex flex-grow flex-col gap-8 p-6 pb-24 md:p-10">
         {/* Sold curent */}
@@ -114,12 +114,6 @@ export default function Dashboard() {
         <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-8 shadow-lg backdrop-blur">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <h2 className="text-xl font-semibold text-white">Activitate</h2>
-            <button
-              onClick={logout}
-              className="inline-flex items-center justify-center rounded-lg border border-red-500/70 px-4 py-2 text-sm font-medium text-red-200 transition hover:border-red-400 hover:text-white"
-            >
-              Logout
-            </button>
           </div>
           <div className="mt-6 grid gap-6 md:grid-cols-2">
             <div className="rounded-xl border border-zinc-800 bg-zinc-950/60 p-6">

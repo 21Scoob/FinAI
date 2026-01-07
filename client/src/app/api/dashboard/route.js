@@ -29,7 +29,7 @@ export async function GET(req) {
     let totalBalance = 0;
     transactions.forEach((t) => {
       if (t.type === "INCOME") totalBalance += t.amount;
-      else totalBalance -= t.amount;
+      else totalBalance -= t.amount; 
     });
 
     // 2. Recent Transactions (Last 5)

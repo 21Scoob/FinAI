@@ -88,7 +88,9 @@ export default function Topbar() {
             <>
               <span className="hidden sm:inline-block text-sm text-zinc-300">
                 Welcome,{" "}
-                <span className="font-semibold text-white">{user.email}</span>
+                <span className="font-semibold text-white">
+                  {user.username}
+                </span>
               </span>
               <button
                 className="cursor-pointer rounded p-2 text-red-400 hover:text-red-300 transition-all duration-300 ease-in-out hover:shadow-md hover:shadow-white/10"
@@ -134,25 +136,25 @@ export default function Topbar() {
 
           <div className="mt-4 flex flex-col items-start p-4 gap-8 text-3xl font-medium">
             <button
-              className="hover:text-gray-300"
+              className="hover:text-gray-300 cursor-pointer"
               onClick={() => goTo("/dashboard")}
             >
               Dashboard
             </button>
             <button
-              className="hover:text-gray-300"
+              className="hover:text-gray-300 cursor-pointer"
               onClick={() => goTo("/buget")}
             >
               Buget
             </button>
             <button
-              className="hover:text-gray-300"
+              className="hover:text-gray-300 cursor-pointer"
               onClick={() => goTo("/cheltuieli")}
             >
               Cheltuieli
             </button>
             <button
-              className="hover:text-gray-300"
+              className="hover:text-gray-300 cursor-pointer"
               onClick={() => goTo("/investitii")}
             >
               Investiții
@@ -162,7 +164,7 @@ export default function Topbar() {
               {user ? (
                 <>
                   <div className="text-sm text-zinc-400">
-                    Logged in as {user.email}
+                    Logged in as {user.username}
                   </div>
                   <button
                     className="w-full rounded-lg border border-red-500/30 text-red-400 px-4 py-2 text-left hover:border-red-500/60"

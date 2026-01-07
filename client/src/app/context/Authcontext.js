@@ -99,7 +99,7 @@ export function AuthProvider({ children }) {
   };
 
   // Funcția de Signup (simulată)
-  const signup = async (email, password) => {
+  const signup = async (username, email, password) => {
     console.log("Se apelează API-ul de signup pentru:", email);
 
     // 1. Apelăm API-ul de backend pe care l-am creat
@@ -108,7 +108,7 @@ export function AuthProvider({ children }) {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ username, email, password }),
     });
 
     const data = await response.json();

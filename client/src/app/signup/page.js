@@ -12,6 +12,7 @@ export default function Signup() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const { signup } = useAuth();
@@ -21,7 +22,7 @@ export default function Signup() {
     setError("");
 
     // Validarea ta e perfectă
-    if (!email || !password || !confirmPassword) {
+    if (!username || !email || !password || !confirmPassword) {
       setError("Toate câmpurile sunt obligatorii.");
       return;
     }
@@ -34,7 +35,7 @@ export default function Signup() {
     // Va apela funcția 'signup' actualizată din AuthContext
     try {
       setIsLoading(true);
-      await signup(email, password);
+      await signup(username, email, password);
     } catch (signupError) {
       const message = signupError instanceof Error ? signupError.message : null;
       setError(message || "Crearea contului a eșuat.");
@@ -55,6 +56,30 @@ export default function Signup() {
           </h2>
           <form className="space-y-6" onSubmit={handleSubmit}>
             {/* ... (câmpurile tale email, password, etc.) ... */}
+            {/* Secțiunea Email */}
+            <div>
+              <label
+                htmlFor="username"
+                className="block text-sm font-medium text-gray-300"
+              >
+                Username
+              </label>
+              <div className="mt-2">
+                <input
+                  id="username"
+                  name="username"
+                  type="username"
+                  autoComplete="username"
+                  required
+                  placeholder="Your username"
+                  className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-white ..."
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  disabled={isLoading}
+                />
+              </div>
+            </div>
+
             {/* Secțiunea Email */}
             <div>
               <label

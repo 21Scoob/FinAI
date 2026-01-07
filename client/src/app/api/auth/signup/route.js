@@ -7,9 +7,9 @@ import bcrypt from "bcryptjs"; // 1. Importăm bcryptjs
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { email, password } = body;
+    const { username, email, password } = body;
 
-    if (!email || !password) {
+    if (!username || !email || !password) {
       return NextResponse.json(
         { error: "Email-ul și parola sunt obligatorii" },
         { status: 400 }
@@ -37,6 +37,7 @@ export async function POST(request) {
     // 4. Salvăm parola HASH-UITĂ în baza de date
     const newUser = await prisma.user.create({
       data: {
+        username: username,
         email: email,
         password: hashedPassword, // 👈 Am schimbat 'password' cu 'hashedPassword'
       },
@@ -44,7 +45,7 @@ export async function POST(request) {
 
     // 5. Trimitem răspunsul (FĂRĂ parolă)
     return NextResponse.json(
-      { id: newUser.id, email: newUser.email },
+      { id: newUser.id, email: newUser.email, username: newUser.username },
       { status: 201 }
     );
   } catch (error) {
