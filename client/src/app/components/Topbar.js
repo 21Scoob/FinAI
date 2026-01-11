@@ -30,7 +30,6 @@ export default function Topbar() {
   const mainLinks = [
     { label: "Dashboard", href: "/dashboard" },
     { label: "Buget", href: "/buget" },
-    { label: "Cheltuieli", href: "/cheltuieli" },
     { label: "Investiții", href: "/investitii" },
   ];
 
@@ -93,7 +92,7 @@ export default function Topbar() {
                 </span>
               </span>
               <button
-                className="cursor-pointer rounded p-2 text-red-400 hover:text-red-300 transition-all duration-300 ease-in-out hover:shadow-md hover:shadow-white/10"
+                className="hidden md:block cursor-pointer rounded p-2 text-red-400 hover:text-red-300 transition-all duration-300 ease-in-out hover:shadow-md hover:shadow-white/10"
                 onClick={logout}
               >
                 Logout
@@ -146,12 +145,6 @@ export default function Topbar() {
               onClick={() => goTo("/buget")}
             >
               Buget
-            </button>
-            <button
-              className="hover:text-gray-300 cursor-pointer"
-              onClick={() => goTo("/cheltuieli")}
-            >
-              Cheltuieli
             </button>
             <button
               className="hover:text-gray-300 cursor-pointer"

@@ -21,16 +21,23 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (user) {
-      fetch("/api/dashboard")
-        .then((res) => res.json())
-        .then((data) => {
-          setData(data);
+      const fetchDashboard = async () => {
+        try {
+          const res = await fetch("/api/dashboard");
+          if (!res.ok) {
+            console.error("Dashboard API error:", res.status);
+            setLoading(false);
+            return;
+          }
+          const dashboardData = await res.json();
+          setData(dashboardData);
+        } catch (err) {
+          console.error("Dashboard fetch error:", err);
+        } finally {
           setLoading(false);
-        })
-        .catch((err) => {
-          console.error(err);
-          setLoading(false);
-        });
+        }
+      };
+      fetchDashboard();
     }
   }, [user]);
 
@@ -52,7 +59,7 @@ export default function Dashboard() {
             Total Balance
           </div>
           <div className="mt-3 text-4xl font-semibold text-white">
-            {data?.balance?.toLocaleString()} RON
+            {(data?.balance ?? 0).toLocaleString()} RON
           </div>
           <div className="mt-4 text-sm text-zinc-500">
             Disponibil în contul principal

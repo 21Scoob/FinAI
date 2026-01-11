@@ -1,10 +1,11 @@
 // src/app/buget/page.js
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import Topbar from "../components/Topbar";
 import Footer from "../components/Footer";
 import BudgetEnvelope from "../components/BugetEnvelope";
+import CheltuieliEnvelope from "../components/CheltuieliEnvelope";
 import { useAuth } from "../context/Authcontext";
 import { useRouter } from "next/navigation";
 
@@ -22,6 +23,15 @@ export default function Buget() {
     icon: "💰",
   });
 
+  // Cheltuieli State
+  const [cheltuieli, setCheltuieli] = useState([]);
+  const [showCheltuieliModal, setShowCheltuieliModal] = useState(false);
+  const [newCheltuiala, setNewCheltuiala] = useState({
+    name: "",
+    allocated: "",
+    icon: "💸",
+  });
+
   // Income State
   const [monthlyIncome, setMonthlyIncome] = useState(0);
   const [showIncomeModal, setShowIncomeModal] = useState(false);
@@ -36,7 +46,7 @@ export default function Buget() {
     }
   }, [user, isReady, router]);
 
-  const fetchData = React.useCallback(async () => {
+  const fetchData = useCallback(async () => {
     try {
       // 1. Fetch Budgets
       const budgetsRes = await fetch("/api/budgets");
@@ -51,7 +61,16 @@ export default function Buget() {
         setBudgets([]);
       }
 
-      // 2. Fetch Transactions (for Income)
+      // 2. Fetch Cheltuieli
+      const cheltuieliRes = await fetch("/api/cheltuieli");
+      const cheltuieliData = await cheltuieliRes.json();
+      if (cheltuieliRes.ok && Array.isArray(cheltuieliData)) {
+        setCheltuieli(cheltuieliData);
+      } else {
+        setCheltuieli([]);
+      }
+
+      // 3. Fetch Transactions (for Income)
       const transRes = await fetch("/api/transactions");
       const transData = await transRes.json();
 
@@ -82,11 +101,14 @@ export default function Buget() {
     }
   }, [logout]);
 
-  useState(() => {
+  useEffect(() => {
     if (user) {
-      fetchData();
+      // IIFE to avoid ESLint warning about setState in effect
+      (async () => {
+        await fetchData();
+      })();
     }
-  }, [user]);
+  }, [user, fetchData]);
 
   const handleCreateBudget = async (e) => {
     e.preventDefault();
@@ -106,6 +128,24 @@ export default function Buget() {
     }
   };
 
+  const handleCreateCheltuiala = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch("/api/cheltuieli", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newCheltuiala),
+      });
+      if (res.ok) {
+        setShowCheltuieliModal(false);
+        setNewCheltuiala({ name: "", allocated: "", icon: "💸" });
+        fetchData();
+      }
+    } catch (error) {
+      console.error("Error creating cheltuiala:", error);
+    }
+  };
+
   const handleCreateIncome = async (e) => {
     e.preventDefault();
     try {
@@ -116,7 +156,7 @@ export default function Buget() {
           description: newIncome.source,
           amount: newIncome.amount,
           type: "INCOME",
-          category: "Salary/Income", // Default category
+          category: "Salary/Income",
           date: new Date().toISOString(),
         }),
       });
@@ -124,7 +164,7 @@ export default function Buget() {
       if (res.ok) {
         setShowIncomeModal(false);
         setNewIncome({ source: "", amount: "" });
-        fetchData(); // Refresh data to update "Venit Lunar"
+        fetchData();
       }
     } catch (error) {
       console.error("Error creating income:", error);
@@ -139,7 +179,12 @@ export default function Buget() {
     );
   }
 
-  const totalAllocated = budgets.reduce((acc, b) => acc + b.allocated, 0);
+  const totalBudgetAllocated = budgets.reduce((acc, b) => acc + b.allocated, 0);
+  const totalCheltuieliAllocated = cheltuieli.reduce(
+    (acc, c) => acc + c.allocated,
+    0
+  );
+  const totalAllocated = totalBudgetAllocated + totalCheltuieliAllocated;
   const remaining = monthlyIncome - totalAllocated;
 
   return (
@@ -147,16 +192,14 @@ export default function Buget() {
       <Topbar />
 
       <main className="flex-grow p-6 md:p-10">
-        <h1 className="text-3xl font-bold mb-8">Planul tău lunar</h1>
+        <h1 className="text-3xl font-bold mb-8">Planul tău</h1>
 
         {/* --- 1. Secțiunea de Rezumat --- */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="rounded-lg p-6 shadow-lg bg-zinc-900 border border-zinc-800 relative group">
             <div className="flex justify-between items-start">
               <div>
-                <h3 className="text-sm font-medium text-zinc-400">
-                  Venit Lunar
-                </h3>
+                <h3 className="text-sm font-medium text-zinc-400">Venitul</h3>
                 <p className="text-3xl font-semibold mt-2">
                   {monthlyIncome.toLocaleString()} RON
                 </p>
@@ -170,9 +213,19 @@ export default function Buget() {
             </div>
           </div>
           <div className="rounded-lg p-6 shadow-lg bg-zinc-900 border border-zinc-800">
-            <h3 className="text-sm font-medium text-zinc-400">Total Alocat</h3>
-            <p className="text-3xl font-semibold mt-2">
-              {totalAllocated.toLocaleString()} RON
+            <h3 className="text-sm font-medium text-zinc-400">
+              Bugete Alocate
+            </h3>
+            <p className="text-3xl font-semibold mt-2 text-blue-400">
+              {totalBudgetAllocated.toLocaleString()} RON
+            </p>
+          </div>
+          <div className="rounded-lg p-6 shadow-lg bg-zinc-900 border border-zinc-800">
+            <h3 className="text-sm font-medium text-zinc-400">
+              Cheltuieli Alocate
+            </h3>
+            <p className="text-3xl font-semibold mt-2 text-orange-400">
+              {totalCheltuieliAllocated.toLocaleString()} RON
             </p>
           </div>
           <div className="rounded-lg p-6 shadow-lg bg-zinc-900 border border-zinc-800">
@@ -189,9 +242,17 @@ export default function Buget() {
           </div>
         </div>
 
-        {/* --- 2. Secțiunea "Plicuri" --- */}
+        {/* --- 2. Secțiunea "Plicuri" (Bugete) --- */}
         <div className="mt-12">
-          <h2 className="text-2xl font-semibold mb-6">Plicurile tale</h2>
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-semibold">Plicurile tale</h2>
+            <button
+              onClick={() => setShowModal(true)}
+              className="text-sm bg-blue-600 hover:bg-blue-500 text-white px-3 py-2 rounded-lg transition"
+            >
+              + Adaugă Plic
+            </button>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {budgets.length > 0 ? (
               budgets.map((env) => (
@@ -208,31 +269,37 @@ export default function Buget() {
             )}
           </div>
         </div>
+
+        {/* --- 3. Secțiunea "Cheltuieli" --- */}
+        <div className="mt-12">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-semibold">Cheltuielile tale</h2>
+            <button
+              onClick={() => setShowCheltuieliModal(true)}
+              className="text-sm bg-orange-600 hover:bg-orange-500 text-white px-3 py-2 rounded-lg transition"
+            >
+              + Adaugă Cheltuială
+            </button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {cheltuieli.length > 0 ? (
+              cheltuieli.map((ch) => (
+                <CheltuieliEnvelope
+                  key={ch.id}
+                  icon={ch.icon}
+                  name={ch.name}
+                  allocated={ch.allocated}
+                  spent={ch.spent}
+                />
+              ))
+            ) : (
+              <p className="text-zinc-500">Nu ai adăugat nicio cheltuială.</p>
+            )}
+          </div>
+        </div>
       </main>
 
-      {/* --- 3. Butonul Plutitor --- */}
-      <button
-        onClick={() => setShowModal(true)}
-        title="Adaugă un Plic Nou"
-        className="fixed bottom-8 right-8 w-16 h-16 bg-blue-600 text-white rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-110"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth={2}
-          stroke="currentColor"
-          className="w-8 h-8"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M12 4.5v15m7.5-7.5h-15"
-          />
-        </svg>
-      </button>
-
-      {/* --- Modal Adăugare Plic --- */}
+      {/* --- Modal Adăugare Plic (Budget) --- */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-xl bg-zinc-900 p-6 border border-zinc-800 shadow-2xl">
@@ -290,6 +357,78 @@ export default function Buget() {
                 <button
                   type="submit"
                   className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-500"
+                >
+                  Salvează
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* --- Modal Adăugare Cheltuială --- */}
+      {showCheltuieliModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-xl bg-zinc-900 p-6 border border-zinc-800 shadow-2xl">
+            <h2 className="text-xl font-bold text-white mb-4">
+              Adaugă Cheltuială
+            </h2>
+            <form onSubmit={handleCreateCheltuiala} className="space-y-4">
+              <div>
+                <label className="block text-sm text-zinc-400 mb-1">
+                  Nume (ex: Chirie, Abonamente)
+                </label>
+                <input
+                  type="text"
+                  required
+                  className="w-full rounded-lg bg-zinc-800 p-2 text-white border border-zinc-700 focus:border-orange-500 outline-none"
+                  value={newCheltuiala.name}
+                  onChange={(e) =>
+                    setNewCheltuiala({ ...newCheltuiala, name: e.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-zinc-400 mb-1">
+                  Sumă Alocată
+                </label>
+                <input
+                  type="number"
+                  required
+                  className="w-full rounded-lg bg-zinc-800 p-2 text-white border border-zinc-700 focus:border-orange-500 outline-none"
+                  value={newCheltuiala.allocated}
+                  onChange={(e) =>
+                    setNewCheltuiala({
+                      ...newCheltuiala,
+                      allocated: e.target.value,
+                    })
+                  }
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-zinc-400 mb-1">
+                  Icon (Emoji)
+                </label>
+                <input
+                  type="text"
+                  className="w-full rounded-lg bg-zinc-800 p-2 text-white border border-zinc-700 focus:border-orange-500 outline-none"
+                  value={newCheltuiala.icon}
+                  onChange={(e) =>
+                    setNewCheltuiala({ ...newCheltuiala, icon: e.target.value })
+                  }
+                />
+              </div>
+              <div className="flex justify-end gap-3 mt-6">
+                <button
+                  type="button"
+                  onClick={() => setShowCheltuieliModal(false)}
+                  className="px-4 py-2 rounded-lg text-zinc-300 hover:text-white hover:bg-zinc-800"
+                >
+                  Anulează
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-lg bg-orange-600 text-white hover:bg-orange-500"
                 >
                   Salvează
                 </button>
