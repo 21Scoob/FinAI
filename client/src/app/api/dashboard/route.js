@@ -29,7 +29,7 @@ export async function GET(req) {
     let totalBalance = 0;
     transactions.forEach((t) => {
       if (t.type === "INCOME") totalBalance += t.amount;
-      else totalBalance -= t.amount; 
+      else totalBalance -= t.amount;
     });
 
     // 2. Recent Transactions (Last 5)
@@ -44,23 +44,54 @@ export async function GET(req) {
       where: { userId },
     });
 
-    // 4. Portfolio Allocation (Mocked for now as we don't have real-time prices)
-    // We can fetch investments and just show them
+    // 4. Portfolio with calculated values
     const investments = await prisma.investment.findMany({
       where: { userId },
     });
+
+    // Calculate total portfolio value and performance
+    let totalInvested = 0;
+    let totalCurrentValue = 0;
+
+    const investmentsWithValue = investments.map((inv) => {
+      const monthsElapsed =
+        (new Date() - new Date(inv.createdAt)) / (1000 * 60 * 60 * 24 * 30);
+      // Randament simplu: valoare = sumă × (1 + randament% × luni/12)
+      const currentValue =
+        inv.amount * (1 + (inv.yieldRate / 100) * (monthsElapsed / 12));
+
+      totalInvested += inv.amount;
+      totalCurrentValue += currentValue;
+
+      return {
+        ...inv,
+        currentValue: Math.round(currentValue * 100) / 100,
+      };
+    });
+
+    const totalProfit = totalCurrentValue - totalInvested;
+    const portfolioYield =
+      totalInvested > 0
+        ? Math.round((totalProfit / totalInvested) * 10000) / 100
+        : 0;
 
     return NextResponse.json({
       balance: totalBalance,
       recentTransactions,
       goals,
-      investments,
+      investments: investmentsWithValue,
+      portfolioStats: {
+        totalInvested: Math.round(totalInvested * 100) / 100,
+        totalCurrentValue: Math.round(totalCurrentValue * 100) / 100,
+        totalProfit: Math.round(totalProfit * 100) / 100,
+        portfolioYield,
+      },
     });
   } catch (error) {
     console.error("Dashboard API Error:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

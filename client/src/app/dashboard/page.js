@@ -77,16 +77,34 @@ export default function Dashboard() {
           <div className="mt-6 grid gap-6 md:grid-cols-2">
             <div className="rounded-xl border border-zinc-800 bg-zinc-950/60 p-6">
               <h3 className="text-lg font-semibold text-white">
-                Performanță lunară
+                Valoare Totală Investiții
               </h3>
               <p className="mt-2 text-sm text-zinc-400">
-                Evoluția activelor tale în ultimele 30 de zile.
+                Suma investițiilor + randament calculat.
               </p>
-              <div className="mt-6 flex items-baseline gap-2 text-3xl font-semibold text-emerald-400">
-                +0%
-                <span className="text-sm font-normal text-zinc-500">
-                  vs luna trecută (Mock)
+              <div className="mt-6 flex items-baseline gap-2 text-3xl font-semibold text-blue-400">
+                {(
+                  data?.portfolioStats?.totalCurrentValue ?? 0
+                ).toLocaleString()}{" "}
+                RON
+              </div>
+              <div className="mt-2 flex items-center gap-2">
+                <span
+                  className={`text-lg font-medium ${
+                    (data?.portfolioStats?.portfolioYield ?? 0) >= 0
+                      ? "text-emerald-400"
+                      : "text-red-400"
+                  }`}
+                >
+                  {(data?.portfolioStats?.portfolioYield ?? 0) >= 0 ? "+" : ""}
+                  {data?.portfolioStats?.portfolioYield ?? 0}%
                 </span>
+                <span className="text-sm text-zinc-500">randament total</span>
+              </div>
+              <div className="mt-1 text-sm text-zinc-500">
+                Investit:{" "}
+                {(data?.portfolioStats?.totalInvested ?? 0).toLocaleString()}{" "}
+                RON
               </div>
             </div>
             <div className="rounded-xl border border-zinc-800 bg-zinc-950/60 p-6">
@@ -105,7 +123,9 @@ export default function Dashboard() {
                     >
                       <span>{inv.name}</span>
                       <span className="font-medium text-white">
-                        {inv.quantity} units
+                        {inv.currentValue?.toLocaleString() ??
+                          inv.amount?.toLocaleString()}{" "}
+                        RON
                       </span>
                     </li>
                   ))
@@ -170,7 +190,7 @@ export default function Dashboard() {
                         <span>{goal.name}</span>
                         <span className="text-white">
                           {Math.round(
-                            (goal.currentAmount / goal.targetAmount) * 100
+                            (goal.currentAmount / goal.targetAmount) * 100,
                           )}
                           %
                         </span>
@@ -181,7 +201,7 @@ export default function Dashboard() {
                           style={{
                             width: `${Math.min(
                               (goal.currentAmount / goal.targetAmount) * 100,
-                              100
+                              100,
                             )}%`,
                           }}
                         ></div>

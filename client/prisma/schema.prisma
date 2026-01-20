@@ -74,9 +74,10 @@ model Cheltuieli {
 model Investment {
   id          Int      @id @default(autoincrement())
   name        String
-  type        String   // e.g., "Stock", "Crypto", "Bond"
-  quantity    Float
-  currentPrice Float
+  type        String   // e.g., "ETF", "Acțiuni", "Obligațiuni", "Crypto"
+  amount      Float    // Suma investită inițial
+  yieldRate   Float    // Randamentul anual în % (ex: 8.0 pentru 8%)
+  createdAt   DateTime @default(now())
   userId      Int
   user        User     @relation(fields: [userId], references: [id])
 }

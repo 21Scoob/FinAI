@@ -13,7 +13,7 @@ export async function POST(req) {
     if (!email || !password) {
       return NextResponse.json(
         { error: "Email și parolă necesare" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -21,7 +21,7 @@ export async function POST(req) {
     if (!user) {
       return NextResponse.json(
         { error: "Credentiale invalide" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -29,7 +29,7 @@ export async function POST(req) {
     if (!ok) {
       return NextResponse.json(
         { error: "Credentiale invalide" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -37,8 +37,8 @@ export async function POST(req) {
     const token = await signJwt({ sub: user.id, email: user.email });
 
     const res = NextResponse.json(
-      { id: user.id, email: user.email },
-      { status: 200 }
+      { id: user.id, email: user.email, username: user.username },
+      { status: 200 },
     );
     res.cookies.set(sessionCookieName, token, cookieOptions);
     return res;
