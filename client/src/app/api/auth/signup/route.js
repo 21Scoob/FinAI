@@ -12,7 +12,7 @@ export async function POST(request) {
     if (!username || !email || !password) {
       return NextResponse.json(
         { error: "Email-ul și parola sunt obligatorii" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -25,7 +25,7 @@ export async function POST(request) {
     if (existingUser) {
       return NextResponse.json(
         { error: "Un cont cu acest email există deja." },
-        { status: 409 } // 409 = Conflict
+        { status: 409 }, // 409 = Conflict
       );
     }
 
@@ -45,15 +45,20 @@ export async function POST(request) {
 
     // 5. Trimitem răspunsul (FĂRĂ parolă)
     return NextResponse.json(
-      { id: newUser.id, email: newUser.email, username: newUser.username },
-      { status: 201 }
+      {
+        id: newUser.id,
+        email: newUser.email,
+        username: newUser.username,
+        role: newUser.role,
+      },
+      { status: 201 },
     );
   } catch (error) {
     // Am scos eroarea P2002 pentru că am verificat manual mai sus
     console.error(error);
     return NextResponse.json(
       { error: "Eroare internă de server" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

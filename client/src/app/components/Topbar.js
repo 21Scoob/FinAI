@@ -33,6 +33,10 @@ export default function Topbar() {
     { label: "Investiții", href: "/investitii" },
   ];
 
+  if (user?.role === "ADMIN") {
+    mainLinks.push({ label: "Admin", href: "/admin" });
+  }
+
   return (
     <>
       <header className="flex  w-full items-center justify-between p-4 sm:px-6 text-white">
@@ -152,6 +156,14 @@ export default function Topbar() {
             >
               Investiții
             </button>
+            {user?.role === "ADMIN" && (
+              <button
+                className="hover:text-gray-300 cursor-pointer text-red-400 font-bold"
+                onClick={() => goTo("/admin")}
+              >
+                ADMIN PANEL
+              </button>
+            )}
 
             <div className="mt-6 flex w-full flex-col gap-4 text-lg">
               {user ? (

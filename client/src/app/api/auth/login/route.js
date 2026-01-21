@@ -37,7 +37,12 @@ export async function POST(req) {
     const token = await signJwt({ sub: user.id, email: user.email });
 
     const res = NextResponse.json(
-      { id: user.id, email: user.email, username: user.username },
+      {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        role: user.role,
+      },
       { status: 200 },
     );
     res.cookies.set(sessionCookieName, token, cookieOptions);
