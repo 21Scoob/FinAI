@@ -2,13 +2,16 @@
 export const runtime = "nodejs";
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import bcrypt from "bcryptjs"; // 1. Importăm bcryptjs
+import { signJwt } from "@/lib/jwt";
+import { sessionCookieName, cookieOptions } from "@/lib/cookies";
+import bcrypt from "bcryptjs";
 
 export async function POST(request) {
   try {
     const body = await request.json();
     const { username, email, password } = body;
 
+    // ... (validări rămase la fel) ...
     if (!username || !email || !password) {
       return NextResponse.json(
         { error: "Email-ul și parola sunt obligatorii" },
@@ -16,8 +19,6 @@ export async function POST(request) {
       );
     }
 
-    // 2. Verificăm dacă user-ul deja există
-    // (E mai curat să facem asta înainte de hashing)
     const existingUser = await prisma.user.findUnique({
       where: { email: email },
     });
@@ -25,26 +26,24 @@ export async function POST(request) {
     if (existingUser) {
       return NextResponse.json(
         { error: "Un cont cu acest email există deja." },
-        { status: 409 }, // 409 = Conflict
+        { status: 409 },
       );
     }
 
-    // 3. HASH-uim PAROLA
-    // "salt" este un factor aleatoriu adăugat parolei înainte de hash
-    // 10 este "costul" - cât de complex să fie. 10 e un standard bun.
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 4. Salvăm parola HASH-UITĂ în baza de date
     const newUser = await prisma.user.create({
       data: {
         username: username,
         email: email,
-        password: hashedPassword, // 👈 Am schimbat 'password' cu 'hashedPassword'
+        password: hashedPassword,
       },
     });
 
-    // 5. Trimitem răspunsul (FĂRĂ parolă)
-    return NextResponse.json(
+    // --- LOGICĂ NOUĂ DE AUTOLOGIN ---
+    const token = await signJwt({ sub: newUser.id, email: newUser.email });
+
+    const res = NextResponse.json(
       {
         id: newUser.id,
         email: newUser.email,
@@ -53,6 +52,11 @@ export async function POST(request) {
       },
       { status: 201 },
     );
+
+    // Setăm cookie-ul de sesiune
+    res.cookies.set(sessionCookieName, token, cookieOptions);
+
+    return res;
   } catch (error) {
     // Am scos eroarea P2002 pentru că am verificat manual mai sus
     console.error(error);
